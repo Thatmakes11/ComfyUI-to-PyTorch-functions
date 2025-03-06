@@ -85,29 +85,29 @@ python fastapi_server.py
 **Request Body:**
 ```json
 {
-  "task_type": string,
-  "task_id": string,
-  "params": dict
+  "task_type": "string",
+  "task_id": "string",
+  "params": "dict"
 }
 ```
 
-Current supported tasks are **ClothesSwap** and **Rmbg**, if you wish to add your own tasks ([Workflow to Pytorch](#workflow-to-pytorch)), check for line 15 and line 52-58 in fastapi_server.py.
+Current supported tasks are **ClothesSwap** and **Rmbg**, if you wish to add your own tasks ([Workflow to Pytorch](#workflow-to-pytorch)), check for line 15 and line 52-58 in `fastapi_server.py`.
 
 Also, your customed torch functions are required to return a dict:
 ```python
 {
-  "status": "success" or "failed", 
-  "output_image": Tensor or None
-  "message": "error" or "completed"
+  "status": "success or failed", 
+  "output_image": "Tensor or None", 
+  "message": "error or completed"
 }
 ```
 
 **Response:**
 ```json
 {
-  "status": "success" or "failed", 
-  "output_path": "/path/to/generated/image_{timestamp}.png" or None
-  "message": "error" or "completed"
+  "status": "success or failed", 
+  "output_path": "/path/to/generated/image_{timestamp}.png or None",
+  "message": "error or completed"
 }
 ```
 The result image will be saved in the "output_path".

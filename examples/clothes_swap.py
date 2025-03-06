@@ -1,31 +1,5 @@
 import random
 import torch
-import traceback
-from fastapi import HTTPException
-
-
-def import_custom_nodes() -> None:
-    """Find all custom nodes in the custom_nodes folder and add those node objects to NODE_CLASS_MAPPINGS
-
-    This function sets up a new asyncio event loop, initializes the PromptServer,
-    creates a PromptQueue, and initializes the custom nodes.
-    """
-    import asyncio
-    import execution
-    from nodes import init_extra_nodes
-    import server
-
-    # Creating a new event loop and setting it as the default loop
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-
-    # Creating an instance of PromptServer with the loop
-    server_instance = server.PromptServer(loop)
-    execution.PromptQueue(server_instance)
-
-    # Initializing custom nodes
-    init_extra_nodes()
-
 
 from nodes import (
     VAELoader,
@@ -42,7 +16,9 @@ from nodes import (
     EmptyImage,
 )
 
-from fastapi_server import LoadImage, get_value_at_index
+from path_manager import get_value_at_index, handle_exception
+from node_manager import LoadImage, import_custom_nodes
+
 
 @torch.no_grad()
 def clothes_swap(source_image="source_image.png", target_image="target_image.png"):
@@ -256,7 +232,7 @@ def clothes_swap(source_image="source_image.png", target_image="target_image.png
 
         ksampler_43 = ksampler.sample(
             seed=random.randint(1, 2**64),
-            steps=1,
+            steps=20,
             cfg=1,
             sampler_name="euler",
             scheduler="normal",
@@ -284,14 +260,8 @@ def clothes_swap(source_image="source_image.png", target_image="target_image.png
         )
 
         image = get_value_at_index(imagecrop_105, 0)
-        return {"source_image": source_image, "target_image": target_image, "output_image": image}
+        return {"status": "success", "output_image": image, "message": "Clothes swapped successfully"}
 
-    except FileNotFoundError as e:
-        raise HTTPException(status_code=400, detail=str(e))  # 400: Bad Request (Missing File)
-    except KeyError as e:
-        raise HTTPException(status_code=500, detail=f"Model loading error: {str(e)}")  # 500: Internal Server Error
-    except RuntimeError as e:
-        raise HTTPException(status_code=500, detail=f"Inference failed: {str(e)}")  # 500: Internal Server Error
     except Exception as e:
-        error_info = traceback.format_exc()
-        raise HTTPException(status_code=500, detail=f"Unknown error: {error_info}")  # 500: Internal Server Error
+        results = handle_exception(e)
+        return {"status": "failed", "output_image": None, "message": results["message"]}

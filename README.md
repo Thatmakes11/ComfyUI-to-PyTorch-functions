@@ -8,7 +8,7 @@ This repo has initialized a fastapi server with multiple ComfyUI workflow tasks.
 
 2. Clone this repo
     ```bash
-    git clone https://github.com/Thatmakes11/ComfyUI-to-PyToch-functions.git
+    git clone https://github.com/Thatmakes11/ComfyUI-to-PyTorch-functions.git
     ```
 
 3. Move `.py` files in examples to the `ComfyUI` directory
@@ -37,6 +37,8 @@ This repo has initialized a fastapi server with multiple ComfyUI workflow tasks.
     latent_preview.py
     main.py
     nodes.py
+    node_manager.py       # file from examples
+    path_manager.py       # file from examples
     remove_background.py  # file from examples
     requirements.txt
     server.py
@@ -83,20 +85,29 @@ python fastapi_server.py
 **Request Body:**
 ```json
 {
-  "task": string,
+  "task_type": string,
   "task_id": string,
-  "params": <JSON string> or dict
+  "params": dict
 }
 ```
 
-Current supported tasks are **ClothesSwap** and **Rmbg**, if you wish to add your own tasks ([Workflow to Pytorch](#workflow-to-pytorch)), check for line 245 and line 274-287 in fastapi_server.py.
+Current supported tasks are **ClothesSwap** and **Rmbg**, if you wish to add your own tasks ([Workflow to Pytorch](#workflow-to-pytorch)), check for line 15 and line 52-58 in fastapi_server.py.
 
-Also, your generated function are required to output a dict with a key-value pair {"output_image": \<Tensor\>}
+Also, your customed torch functions are required to return a dict:
+```python
+{
+  "status": "success" or "failed", 
+  "output_image": Tensor or None
+  "message": "error" or "completed"
+}
+```
 
 **Response:**
 ```json
 {
-  "output_path": "/path/to/generated/image.png"
+  "status": "success" or "failed", 
+  "output_path": "/path/to/generated/image_{timestamp}.png" or None
+  "message": "error" or "completed"
 }
 ```
 The result image will be saved in the "output_path".
